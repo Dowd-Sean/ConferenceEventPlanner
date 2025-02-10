@@ -1,21 +1,23 @@
 import React, { useState } from "react";
 import "./ConferenceEvent.css";
 import TotalCost from "./TotalCost";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux"; //Retrieves venue items from the Redux store state
 import { incrementQuantity, decrementQuantity } from "./venueSlice";
 const ConferenceEvent = () => {
     const [showItems, setShowItems] = useState(false);
     const [numberOfPeople, setNumberOfPeople] = useState(1);
-    const venueItems = useSelector((state) => state.venue);
+    const venueItems = useSelector((state) => state.venue); //Retreving venue items from store state
     const dispatch = useDispatch();
-    const remainingAuditoriumQuantity = 3 - venueItems.find(item => item.name === "Auditorium Hall (Capacity:200)").quantity;
+    const remainingAuditoriumQuantity = 3 - venueItems.find(item => item.name === "Auditorium Hall (Capacity:200)").quantity; //Prevents user from ordering more Aud halls then avaliable
 
     
     const handleToggleItems = () => {
         console.log("handleToggleItems called");
         setShowItems(!showItems);
     };
-
+    /*
+    Handles how many of events, Meal, and Addons can be added/removed to the cart. 
+    */
     const handleAddToCart = (index) => {
         if (venueItems[index].name === "Auditorium Hall (Capacity:200)" && venueItems[index].quantity >= 3) {
           return; 
@@ -47,6 +49,9 @@ const ConferenceEvent = () => {
     const ItemsDisplay = ({ items }) => {
 
     };
+    /*
+    Adds the cost of all Venues in the cart
+    */
     const calculateTotalCost = (section) => {
         let totalCost = 0;
         if (section === "venue") {
