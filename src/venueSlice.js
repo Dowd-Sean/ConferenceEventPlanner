@@ -37,17 +37,20 @@ export const venueSlice = createSlice({
   
   ],
   reducers: {
-   
+   /*
+    incrementQuantity:Increase the number of venue items in the state
+    decrementQuantitiy: Deacrease the number of venue ites in the state
+   */
     incrementQuantity: (state, action) => {
-      const { payload: index } = action;
-      if (state[index]) {
+      const { payload: index } = action; //payload is data being sent and renamed index
+      if (state[index]) { //Checks if the items exists in the state at the provided index
         if (state[index].name === " Auditorium Hall (Capacity:200)" && state[index].quantity >= 3) {
           return;        }
         state[index].quantity++;
       }
     },
     decrementQuantity: (state, action) => {
-      const { payload: index } = action;
+      const { payload: index } = action; //payload is data being sent and renamed index
       if (state[index] && state[index].quantity > 0) {
         state[index].quantity--;
       }

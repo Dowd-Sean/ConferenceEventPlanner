@@ -6,7 +6,7 @@ import { incrementQuantity, decrementQuantity } from "./venueSlice";
 const ConferenceEvent = () => {
     const [showItems, setShowItems] = useState(false);
     const [numberOfPeople, setNumberOfPeople] = useState(1);
-    const venueItems = useSelector((state) => state.venue); //Retreving venue items from store state
+    const venueItems = useSelector((state) => state.venue); //Retreving venue items from Redux store state
     const dispatch = useDispatch();
     const remainingAuditoriumQuantity = 3 - venueItems.find(item => item.name === "Auditorium Hall (Capacity:200)").quantity; //Prevents user from ordering more Aud halls then avaliable
 
@@ -51,6 +51,10 @@ const ConferenceEvent = () => {
     };
     /*
     Adds the cost of all Venues in the cart
+    using arrow function syntax 
+    section: is a string parameter that indicat the section is calculated
+    venueItems: iteam array represent an item with properties cost and quantity
+
     */
     const calculateTotalCost = (section) => {
         let totalCost = 0;
