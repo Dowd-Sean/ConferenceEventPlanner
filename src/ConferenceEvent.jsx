@@ -4,14 +4,16 @@ import TotalCost from "./TotalCost";
 import { useSelector, useDispatch } from "react-redux"; //Retrieves venue items from the Redux store state
 import { incrementQuantity, decrementQuantity } from "./venueSlice";
 import { incrementAvQuantity, decrementAvQuantity } from "./avSlice";
+import { toggleMealSelection } from "./mealsSlice";
 const ConferenceEvent = () => {
     const [showItems, setShowItems] = useState(false);
     const [numberOfPeople, setNumberOfPeople] = useState(1);
     const venueItems = useSelector((state) => state.venue); //Retreving venue items from Redux store state
     const dispatch = useDispatch();
     const remainingAuditoriumQuantity = 3 - venueItems.find(item => item.name === "Auditorium Hall (Capacity:200)").quantity; //Prevents user from ordering more Aud halls then avaliable
-    const avItems = useSelector((state) => state.av);
-    
+    const avItems = useSelector((state) => state.av);  //Retreve av items from redux store state
+    const mealsItems = useSelector((state) => state.meals); //Retreve meal items from redux store state
+
     const handleToggleItems = () => {
         console.log("handleToggleItems called");
         setShowItems(!showItems);
@@ -39,8 +41,26 @@ const ConferenceEvent = () => {
         dispatch(decrementAvQuantity(index));
     };
 
+    /*
+        The function takes an index parameter of the meal item that triggered the selection
+        It retrieves the meal item object from the mealsItems array using the provided index
+        It checks if the retrieved item is both selected, item.selected === true and that its type is mealForPeople
+        If these two conditions are met, it prepares to update the numberOfPeople state variable before toggling the selection
+        If the item is of type mealForPeople and already selected, item.selected is true, it maintains the current numberOfPeople
+        If not selected, it sets numberOfPeople to 0
+        It dispatches the toggleMealSelection action with the index of the item and, if applicable, the new numberOfPeople
+        If the item is not of type mealForPeople or is not selected, it dispatches an action to toggle the meal selection without any additional considerations
+    */
+   
     const handleMealSelection = (index) => {
-       
+       const item = mealsItems[index];
+       if (item.selected && item.type === "mealForPeople") {
+        //Ensure numberOfPeople is set before toggling selection
+        const newNumberOfPeople = item.selected ? numberOfPeople : 0;
+        dispatch(toggleMealSelection(index, newNumberOfPeople));
+       } else {
+        dispatch(toggleMealSelection(index));
+       }
     };
 
     const getItemsFromTotalCost = () => {
@@ -163,59 +183,78 @@ const ConferenceEvent = () => {
         <div className="total_cost">Total Cost: ${venueTotalCost}</div>
       </div>
 
-                        {/*Necessary Add-ons*/}
-                        <div id="addons" className="venue_container container_main">
+        {/*Necessary Add-ons*/}
+        <div id="addons" className="venue_container container_main">
 
+            <div className="text">
 
-                            <div className="text">
+                <h1> Add-ons Selection</h1>
 
-                                <h1> Add-ons Selection</h1>
-
-                            </div>
-                            {/*avItems: array that contains AV equipment 
-                                map iterates through the array creates a div tag
-                            for each element */}
-                            <div className="addons_selection">
-                                {avItems.map((item, index) => (
-                                    <div className="av_data venue_main" key={index}>
-                                        <div className="img"> {/*Image for the AV equipment*/}
-                                            <img src={item.img} alt={item.name}/>
-                                        </div>
-                                    <div className="text"> {item.name} </div> {/*Displays name of the av equipment */}
-                                    <div> ${item.cost} </div>
-                                        <div className="addons_btn">
-                                            {/*Buttons for incrementining and decrementing for av equipment */}
-                                            <button className="btn-warning" onClick={() => handleDecrementAvQuantity(index)}> &ndash; </button>
-                                            <span className="quantity-value">{item.quantity}</span> {/*Dispalys current av Quantity */}
-                                            <button className="btn-success" onClick={() => handleIncrementAvQuantity(index)}> &#43; </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                                <div className="total_cost">Total Cost:{avTotalCost}</div>
-
-                            </div>
-
-                            {/* Meal Section */}
-
-                            <div id="meals" className="venue_container container_main">
-
-                                <div className="text">
-
-                                    <h1>Meals Selection</h1>
-                                </div>
-
-                                <div className="input-container venue_selection">
-
-                                </div>
-                                <div className="meal_selection">
-
-                                </div>
-                                <div className="total_cost">Total Cost: </div>
-
-
-                            </div>
+            </div>
+            {/*avItems: array that contains AV equipment 
+            map iterates through the array creates a div tag
+            for each element */}
+            <div className="addons_selection">
+                {avItems.map((item, index) => (
+                    <div className="av_data venue_main" key={index}>
+                        <div className="img"> {/*Image for the AV equipment*/}
+                            <img src={item.img} alt={item.name}/>
                         </div>
+                        <div className="text"> {item.name} </div> {/*Displays name of the av equipment */}
+                            <div> ${item.cost} </div>
+                                <div className="addons_btn">
+                                    {/*Buttons for incrementining and decrementing for av equipment */}
+                                    <button className="btn-warning" onClick={() => handleDecrementAvQuantity(index)}> &ndash; </button>
+                                    <span className="quantity-value">{item.quantity}</span> {/*Dispalys current av Quantity */}
+                                    <button className="btn-success" onClick={() => handleIncrementAvQuantity(index)}> &#43; </button>
+                                </div>
+                            </div>
+                        ))}
+                        </div>
+                        <div className="total_cost">Total Cost:{avTotalCost}</div>
+
+                    </div>
+
+                    {/* Meal Section */}
+                    <div id="meals" className="venue_container container_main">
+                        <div className="text">
+                            <h1>Meals Selection</h1>
+                        </div>
+                        {/**creates a labled input field for specifiying the number of poeple. It uses an <input> element
+                         * of type number with a minimum vale of 1 and updates the numberOfpeople state with the parsed
+                         * intger value entered by the user
+                         */}
+                        <div className="input-container venue_selection">
+                            <label htmlFor="numberOfPeople"><h3>Number of People:</h3></label>
+                            <input type="number" className="input_box5" id="numberOfPeople" value={numberOfPeople}
+                                onChange={(e) => setNumberOfPeople(parseInt(e.target.value))}
+                                min="1"
+                            />
+                        </div>
+                        
+                        <div className="meal_selection">{/**Container for the list of meal items */}
+                            {mealsItems.map((item, index) => (
+                                <div className="meal_item" key={index} style={{padding: 15}}> 
+                                {/**This is a container for each meal item The key prop is necessary for React to keep track of each item in the list */}
+                                    <div className="inner">
+                                        <input type="checkbox" id={ 'meal_${index}'}
+                                            checked={ item.selected }
+                                            onChange={() => handleMealSelection(index)}
+                                            {/**Above code is a checkbox input element. The selected property of the 
+                                            current item controls its checked property. When the checkbox state changes,
+                                            it triggers the handleMealSelection() function with the current items index*/}
+                                        />
+                                        <label htmlFor={'meal_${index}'}> {item.name} </label> {/**Label associated with the checkbox */}
+                                    </div>
+                                    <div className="meal_cost">${item.cost}</div> {/**Cost of each meal item */}
+                                </div>
+                            ))}
+                        </div>
+                        <div className="total_cost">Total Cost: </div>
+
+
+                        </div>
+                    </div>
                     ) : (
                         <div className="total_amount_detail">
                             <TotalCost totalCosts={totalCosts} handleClick={handleToggleItems} ItemsDisplay={() => <ItemsDisplay items={items} />} />
