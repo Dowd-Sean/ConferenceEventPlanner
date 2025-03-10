@@ -3,13 +3,14 @@ import "./ConferenceEvent.css";
 import TotalCost from "./TotalCost";
 import { useSelector, useDispatch } from "react-redux"; //Retrieves venue items from the Redux store state
 import { incrementQuantity, decrementQuantity } from "./venueSlice";
+import { incrementAvQuantity, decrementAvQuantity } from "./avSlice";
 const ConferenceEvent = () => {
     const [showItems, setShowItems] = useState(false);
     const [numberOfPeople, setNumberOfPeople] = useState(1);
     const venueItems = useSelector((state) => state.venue); //Retreving venue items from Redux store state
     const dispatch = useDispatch();
     const remainingAuditoriumQuantity = 3 - venueItems.find(item => item.name === "Auditorium Hall (Capacity:200)").quantity; //Prevents user from ordering more Aud halls then avaliable
-
+    const avItems = useSelector((state) => state.av);
     
     const handleToggleItems = () => {
         console.log("handleToggleItems called");
@@ -31,9 +32,11 @@ const ConferenceEvent = () => {
         }
       };
     const handleIncrementAvQuantity = (index) => {
+        dispatch(incrementAvQuantity(index));
     };
 
     const handleDecrementAvQuantity = (index) => {
+        dispatch(decrementAvQuantity(index));
     };
 
     const handleMealSelection = (index) => {
@@ -62,11 +65,15 @@ const ConferenceEvent = () => {
           venueItems.forEach((item) => {
             totalCost += item.cost * item.quantity;
           });
+        } else if (section == "av") {
+            avItems.forEach((item) => {
+                totalCost += item.cost * item.quantity;
+            });
         }
         return totalCost;
       };
     const venueTotalCost = calculateTotalCost("venue");
-
+    const avTotalCost = calculateTotalCost("av");
     const navigateToProducts = (idType) => {
         if (idType == '#venue' || idType == '#addons' || idType == '#meals') {
           if (showItems) { // Check if showItems is false
@@ -156,19 +163,36 @@ const ConferenceEvent = () => {
         <div className="total_cost">Total Cost: ${venueTotalCost}</div>
       </div>
 
-                            {/*Necessary Add-ons*/}
-                            <div id="addons" className="venue_container container_main">
+                        {/*Necessary Add-ons*/}
+                        <div id="addons" className="venue_container container_main">
 
 
-                                <div className="text">
+                            <div className="text">
 
-                                    <h1> Add-ons Selection</h1>
+                                <h1> Add-ons Selection</h1>
 
-                                </div>
-                                <div className="addons_selection">
-
-                                </div>
-                                <div className="total_cost">Total Cost:</div>
+                            </div>
+                            {/*avItems: array that contains AV equipment 
+                                map iterates through the array creates a div tag
+                            for each element */}
+                            <div className="addons_selection">
+                                {avItems.map((item, index) => (
+                                    <div className="av_data venue_main" key={index}>
+                                        <div className="img"> {/*Image for the AV equipment*/}
+                                            <img src={item.img} alt={item.name}/>
+                                        </div>
+                                    <div className="text"> {item.name} </div> {/*Displays name of the av equipment */}
+                                    <div> ${item.cost} </div>
+                                        <div className="addons_btn">
+                                            {/*Buttons for incrementining and decrementing for av equipment */}
+                                            <button className="btn-warning" onClick={() => handleDecrementAvQuantity(index)}> &ndash; </button>
+                                            <span className="quantity-value">{item.quantity}</span> {/*Dispalys current av Quantity */}
+                                            <button className="btn-success" onClick={() => handleIncrementAvQuantity(index)}> &#43; </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                                <div className="total_cost">Total Cost:{avTotalCost}</div>
 
                             </div>
 

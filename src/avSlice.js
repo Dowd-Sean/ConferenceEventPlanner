@@ -1,5 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
-
+/*
+ State that controls if you to rent additional AV equipment for the venues
+ that use rents
+*/
 export const avSlice = createSlice({
   name: "av",
   initialState: [
@@ -38,13 +41,13 @@ export const avSlice = createSlice({
 
   reducers: {
     incrementAvQuantity: (state, action) => {
-        const item = state[action.payload];
+        const item = state[action.payload]; //Identifies what AV equipment your adding
         if (item) {
             item.quantity++;
         }
     },
     decrementAvQuantity: (state, action) => {
-        const item = state[action.payload];
+        const item = state[action.payload]; //Identifies what AV equipment your decrementing
         if (item && item.quantity > 0) {
             item.quantity--;
         }
