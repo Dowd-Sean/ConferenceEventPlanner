@@ -63,14 +63,83 @@ const ConferenceEvent = () => {
        }
     };
 
+    /*
+        will store all items the user has selected and store them in an array to be
+        calculated later.
+    */
     const getItemsFromTotalCost = () => {
-        const items = [];
+        const items = []; //Takes all items from venue, av, and meals and adds them to this array
+        venueItems.forEach((item) => { //venue
+            if(item.quantity > 0) {
+                items.push({ ...item, type: "venue"});
+            }
+        });
+        avItems.forEach((item) => { //av
+            if (
+                item.quantity > 0 &&
+                !items.some((i) => i.name === item.name && i.type == "av")
+            ) {
+                items.push({ ...item, type: "av"});
+            }
+        }); 
+        mealsItems.forEach((item) => { //meals 
+            if ( item.selected) {
+                const itemForDisplay = { ...item, type: "meals"};
+                if (item.numberOfPeople) {
+                    itemForDisplay.numberOfPeople = numberOfPeople;
+                }
+                items.push(itemForDisplay);
+            }
+        });
+        return items; 
     };
 
     const items = getItemsFromTotalCost();
 
+    /** 
+     * Creates logic to display all items details as a table
+     * Layout is in 4 columns Name, Unit Cost, Quantity, and Subtotal'
+     * It iterates the array using a map function
+     * Each item create a table row <tr>
+     * In reach row item name, cost
+     * rooms and addon will dispaly the quantity of the item 
+     * meals it will use numberOfPeopel
+    */
     const ItemsDisplay = ({ items }) => {
-
+        console.log(items);
+        return <>
+            <div className="display_box1">
+                {/*If no items in the display*/}
+                {items.length === 0 && <p>No items selected</p>}
+                <table className="table_item_data"> 
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Unit Cost</th>
+                            <th>Quantity</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {items.map((item, index) => (
+                            <tr key={index}>
+                                <td>{item.name}</td>
+                                <td>${item.cost}</td>
+                                <td> 
+                                    {item.type === "meals" || item.numberOfPeople
+                                    ? ` For ${numberOfPeople} people `
+                                    : item.quantity}
+                                </td>
+                                <td>{item.type === "meals" || item.numberOfPeople
+                                    ? `${item.cost * numberOfPeople}`
+                                    : `${item.cost * item.quantity}`}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </>
     };
     /*
     Adds the cost of all Venues in the cart
@@ -89,11 +158,23 @@ const ConferenceEvent = () => {
             avItems.forEach((item) => {
                 totalCost += item.cost * item.quantity;
             });
+        } else if (section == "meaals") {
+            mealsItems.forEach((item) => {
+                if(item.selected) {
+                    totalCost += item.cost * numberOfPeople;
+                }
+            });
         }
         return totalCost;
       };
     const venueTotalCost = calculateTotalCost("venue");
     const avTotalCost = calculateTotalCost("av");
+    const mealsTotalCost = calculateTotalCost("meals");
+    const totalCosts = {
+        venue: venueTotalCost,
+        av: avTotalCost,
+        meals, mealsTotalCost,
+    };
     const navigateToProducts = (idType) => {
         if (idType == '#venue' || idType == '#addons' || idType == '#meals') {
           if (showItems) { // Check if showItems is false
@@ -240,9 +321,9 @@ const ConferenceEvent = () => {
                                         <input type="checkbox" id={ 'meal_${index}'}
                                             checked={ item.selected }
                                             onChange={() => handleMealSelection(index)}
-                                            {/**Above code is a checkbox input element. The selected property of the 
+                                            /*Above code is a checkbox input element. The selected property of the 
                                             current item controls its checked property. When the checkbox state changes,
-                                            it triggers the handleMealSelection() function with the current items index*/}
+                                            it triggers the handleMealSelection() function with the current items index*/
                                         />
                                         <label htmlFor={'meal_${index}'}> {item.name} </label> {/**Label associated with the checkbox */}
                                     </div>
@@ -250,20 +331,21 @@ const ConferenceEvent = () => {
                                 </div>
                             ))}
                         </div>
-                        <div className="total_cost">Total Cost: </div>
+                        <div className="total_cost">Total Cost: {mealsTotalCost}</div>
 
 
                         </div>
                     </div>
                     ) : (
+                        /** TotalCost component receives the props totalCosts and ItemDisplay
+                         * totalCosts: prop contains cost data and the ItemsDisplay() component with items
+                         * is passed as props to the TotalCost component
+                         */
                         <div className="total_amount_detail">
                             <TotalCost totalCosts={totalCosts} handleClick={handleToggleItems} ItemsDisplay={() => <ItemsDisplay items={items} />} />
                         </div>
                     )
                 }
-
-
-
 
             </div>
         </>
