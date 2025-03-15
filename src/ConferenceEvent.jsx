@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+ import React, { useState } from "react";
 import "./ConferenceEvent.css";
 import TotalCost from "./TotalCost";
 import { useSelector, useDispatch } from "react-redux"; //Retrieves venue items from the Redux store state
@@ -9,11 +9,11 @@ const ConferenceEvent = () => {
     const [showItems, setShowItems] = useState(false);
     const [numberOfPeople, setNumberOfPeople] = useState(1);
     const venueItems = useSelector((state) => state.venue); //Retreving venue items from Redux store state
-    const dispatch = useDispatch();
-    const remainingAuditoriumQuantity = 3 - venueItems.find(item => item.name === "Auditorium Hall (Capacity:200)").quantity; //Prevents user from ordering more Aud halls then avaliable
     const avItems = useSelector((state) => state.av);  //Retreve av items from redux store state
     const mealsItems = useSelector((state) => state.meals); //Retreve meal items from redux store state
-
+    const dispatch = useDispatch();
+    const remainingAuditoriumQuantity = 3 - venueItems.find(item => item.name === "Auditorium Hall (Capacity:200)").quantity; //Prevents user from ordering more Aud halls then avaliable
+    
     const handleToggleItems = () => {
         console.log("handleToggleItems called");
         setShowItems(!showItems);
@@ -26,13 +26,14 @@ const ConferenceEvent = () => {
           return; 
         }
         dispatch(incrementQuantity(index));
-      };
+    };
     
-      const handleRemoveFromCart = (index) => {
+    const handleRemoveFromCart = (index) => {
         if (venueItems[index].quantity > 0) {
           dispatch(decrementQuantity(index));
         }
-      };
+    };
+    
     const handleIncrementAvQuantity = (index) => {
         dispatch(incrementAvQuantity(index));
     };
@@ -158,7 +159,7 @@ const ConferenceEvent = () => {
             avItems.forEach((item) => {
                 totalCost += item.cost * item.quantity;
             });
-        } else if (section == "meaals") {
+        } else if (section == "meals") {
             mealsItems.forEach((item) => {
                 if(item.selected) {
                     totalCost += item.cost * numberOfPeople;
@@ -170,18 +171,19 @@ const ConferenceEvent = () => {
     const venueTotalCost = calculateTotalCost("venue");
     const avTotalCost = calculateTotalCost("av");
     const mealsTotalCost = calculateTotalCost("meals");
-    const totalCosts = {
-        venue: venueTotalCost,
-        av: avTotalCost,
-        meals, mealsTotalCost,
-    };
+    
     const navigateToProducts = (idType) => {
         if (idType == '#venue' || idType == '#addons' || idType == '#meals') {
           if (showItems) { // Check if showItems is false
             setShowItems(!showItems); // Toggle showItems to true only if it's currently false
           }
         }
-      }
+    }
+    const totalCosts = {
+        venue: venueTotalCost,
+        av: avTotalCost,
+        meals: mealsTotalCost,
+    };
 
     return (
         <>
@@ -318,14 +320,14 @@ const ConferenceEvent = () => {
                                 <div className="meal_item" key={index} style={{padding: 15}}> 
                                 {/**This is a container for each meal item The key prop is necessary for React to keep track of each item in the list */}
                                     <div className="inner">
-                                        <input type="checkbox" id={ 'meal_${index}'}
+                                        <input type="checkbox" id={ `meal_${index}`}
                                             checked={ item.selected }
                                             onChange={() => handleMealSelection(index)}
                                             /*Above code is a checkbox input element. The selected property of the 
                                             current item controls its checked property. When the checkbox state changes,
                                             it triggers the handleMealSelection() function with the current items index*/
                                         />
-                                        <label htmlFor={'meal_${index}'}> {item.name} </label> {/**Label associated with the checkbox */}
+                                        <label htmlFor={`meal_${index}`}> {item.name} </label> {/**Label associated with the checkbox */}
                                     </div>
                                     <div className="meal_cost">${item.cost}</div> {/**Cost of each meal item */}
                                 </div>
